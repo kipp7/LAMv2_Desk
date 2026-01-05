@@ -199,6 +199,12 @@ body {
   scroll-behavior: auto !important;
 }
 
+/* Ant Design Tag contrast on dark backgrounds */
+.desk-app .ant-tag,
+.desk-page .ant-tag {
+  color: rgba(226, 232, 240, 0.92) !important;
+}
+
 /* Modern scrollbars (Chromium/WebView2 + Firefox fallback) */
 :root {
   --desk-scrollbar-thumb: rgba(148, 163, 184, 0.32);

@@ -15,7 +15,7 @@
 
 2. 启动前端（端口 5174）：
 
-   - `npm -w apps/desk run dev`
+   - `npm run dev`
 
 3. 启动桌面端（指向 dev server）：
 
@@ -26,7 +26,7 @@
 
 1. 构建前端（生成 `apps/desk/dist`）：
 
-   - `npm -w apps/desk run build`
+   - `npm run build`
 
 2. 发布桌面端（会把 `apps/desk/dist` 复制到输出目录的 `web/`）：
 
@@ -37,4 +37,9 @@
 - Node.js >= 18
 - .NET 8 SDK
 - WebView2 Runtime（Win11 通常自带）
+
+## 文档
+
+- 工作记录：`docs/AI_WORKLOG.md`
+- API 对接：`docs/API_INTEGRATION.md`
 
