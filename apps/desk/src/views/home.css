@@ -233,6 +233,42 @@
   gap: 6px;
 }
 
+.desk-home-action-primary.ant-btn-primary {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.96), rgba(56, 189, 248, 0.9)) !important;
+  border-color: transparent !important;
+  color: #061021 !important;
+  font-weight: 900;
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.18), 0 10px 22px rgba(34, 211, 238, 0.12);
+}
+
+.desk-home-action-primary.ant-btn-primary:hover {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 1), rgba(56, 189, 248, 0.98)) !important;
+}
+
+.desk-home-action-secondary.ant-btn {
+  background: rgba(15, 23, 42, 0.28) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: rgba(226, 232, 240, 0.92) !important;
+}
+
+.desk-home-action-secondary.ant-btn:hover {
+  background: rgba(34, 211, 238, 0.08) !important;
+  border-color: rgba(34, 211, 238, 0.38) !important;
+  color: rgba(226, 232, 240, 0.95) !important;
+}
+
+.desk-home-go-btn.ant-btn {
+  background: rgba(34, 211, 238, 0.08) !important;
+  border-color: rgba(34, 211, 238, 0.38) !important;
+  color: rgba(165, 243, 252, 0.96) !important;
+  font-weight: 900;
+}
+
+.desk-home-go-btn.ant-btn:hover {
+  background: rgba(34, 211, 238, 0.12) !important;
+  border-color: rgba(34, 211, 238, 0.55) !important;
+}
+
 .desk-home-sites-filter {
   padding: 6px;
 }

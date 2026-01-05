@@ -73,13 +73,65 @@ body {
 }
 
 .desk-pill-tag {
-  border: 1px solid rgba(34, 211, 238, 0.28) !important;
-  background: rgba(34, 211, 238, 0.12) !important;
-  color: rgba(165, 243, 252, 0.95) !important;
+  --desk-tag-border: rgba(34, 211, 238, 0.28);
+  --desk-tag-bg: rgba(34, 211, 238, 0.12);
+  --desk-tag-fg: rgba(165, 243, 252, 0.95);
+  border: 1px solid var(--desk-tag-border) !important;
+  background: var(--desk-tag-bg) !important;
+  color: var(--desk-tag-fg) !important;
   font-weight: 800;
   border-radius: 999px;
   padding-inline: 8px;
   margin-inline-end: 0 !important;
+}
+
+/* Pill tag tone variants */
+.desk-pill-tag.desk-tone-neutral {
+  --desk-tag-border: rgba(148, 163, 184, 0.22);
+  --desk-tag-bg: rgba(148, 163, 184, 0.12);
+  --desk-tag-fg: rgba(226, 232, 240, 0.92);
+}
+
+.desk-pill-tag.desk-tone-cyan {
+  --desk-tag-border: rgba(34, 211, 238, 0.32);
+  --desk-tag-bg: rgba(34, 211, 238, 0.12);
+  --desk-tag-fg: rgba(165, 243, 252, 0.96);
+}
+
+.desk-pill-tag.desk-tone-blue {
+  --desk-tag-border: rgba(96, 165, 250, 0.32);
+  --desk-tag-bg: rgba(96, 165, 250, 0.12);
+  --desk-tag-fg: rgba(191, 219, 254, 0.96);
+}
+
+.desk-pill-tag.desk-tone-geekblue {
+  --desk-tag-border: rgba(56, 189, 248, 0.32);
+  --desk-tag-bg: rgba(56, 189, 248, 0.12);
+  --desk-tag-fg: rgba(186, 230, 253, 0.96);
+}
+
+.desk-pill-tag.desk-tone-purple {
+  --desk-tag-border: rgba(168, 85, 247, 0.32);
+  --desk-tag-bg: rgba(168, 85, 247, 0.12);
+  --desk-tag-fg: rgba(233, 213, 255, 0.96);
+}
+
+.desk-pill-tag.desk-tone-orange {
+  --desk-tag-border: rgba(245, 158, 11, 0.32);
+  --desk-tag-bg: rgba(245, 158, 11, 0.12);
+  --desk-tag-fg: rgba(254, 215, 170, 0.96);
+}
+
+.desk-pill-tag.desk-tone-red {
+  --desk-tag-border: rgba(239, 68, 68, 0.32);
+  --desk-tag-bg: rgba(239, 68, 68, 0.12);
+  --desk-tag-fg: rgba(254, 202, 202, 0.96);
+}
+
+.desk-pill-tag.desk-tone-green {
+  --desk-tag-border: rgba(34, 197, 94, 0.32);
+  --desk-tag-bg: rgba(34, 197, 94, 0.12);
+  --desk-tag-fg: rgba(187, 247, 208, 0.96);
 }
 
 /* Ant Design Table dark tweaks (used with .desk-dark-table wrapper) */
@@ -197,12 +249,6 @@ body {
   animation-duration: 0s !important;
   animation-delay: 0s !important;
   scroll-behavior: auto !important;
-}
-
-/* Ant Design Tag contrast on dark backgrounds */
-.desk-app .ant-tag,
-.desk-page .ant-tag {
-  color: rgba(226, 232, 240, 0.92) !important;
 }
 
 /* Modern scrollbars (Chromium/WebView2 + Firefox fallback) */
