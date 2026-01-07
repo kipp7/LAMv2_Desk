@@ -1,4 +1,4 @@
-import { Alert, Button, Spin, Switch, Tag } from "antd";
+import { Button, Spin, Switch, Tag } from "antd";
 import ReactECharts from "echarts-for-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -552,16 +552,6 @@ export function AnalysisPage() {
             系统设置
           </button>
         </div>
-
-        {hasCritical ? (
-          <div className="desk-analysis-alert">
-            <Alert type="error" showIcon message={`存在离线设备：${String(stats.offline)}`} />
-          </div>
-        ) : hasWarn ? (
-          <div className="desk-analysis-alert">
-            <Alert type="warning" showIcon message={`存在预警设备：${String(stats.warn)}`} />
-          </div>
-        ) : null}
       </div>
 
       {loading ? (
