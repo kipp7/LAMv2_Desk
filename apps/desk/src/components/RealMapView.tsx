@@ -19,8 +19,8 @@ export type StationMapMetrics = {
 type RealMapViewProps = {
   layer: BaseLayer;
   stations: Station[];
-  selectedStationId: string | null;
-  onSelectStationId: (id: string | null) => void;
+  selectedStationIds: string[];
+  onSelectStationIds: (ids: string[]) => void;
   resetKey?: number;
   metricsByStationId?: Record<string, StationMapMetrics | undefined>;
 };
@@ -89,7 +89,7 @@ export function RealMapView(props: RealMapViewProps) {
     const byId = new Map<string, L.DivIcon>();
 
     for (const s of props.stations) {
-      const isSelected = props.selectedStationId === s.id;
+      const isSelected = props.selectedStationIds.includes(s.id);
       const cls = `${riskClass(s.risk)}${isSelected ? " is-selected" : ""}`;
       const count = Math.max(0, Math.round(s.deviceCount ?? 0));
       const badge = count > 0 ? `<span class="badge">${count}</span>` : "";
@@ -113,7 +113,7 @@ export function RealMapView(props: RealMapViewProps) {
     }
 
     return byId;
-  }, [props.selectedStationId, props.stations]);
+  }, [props.selectedStationIds, props.stations]);
 
   const bounds = useMemo<L.LatLngBoundsExpression>(() => {
     const pts = props.stations
@@ -183,12 +183,12 @@ export function RealMapView(props: RealMapViewProps) {
       <RecenterOnReset resetKey={props.resetKey} bounds={bounds} />
       <ClearSelectionOnMapClick
         onClear={() => {
-          props.onSelectStationId(null);
+          props.onSelectStationIds([]);
         }}
       />
 
       {props.stations.map((s) => {
-        const isSelected = props.selectedStationId === s.id;
+        const isSelected = props.selectedStationIds.includes(s.id);
         const icon = icons.get(s.id);
         if (!icon) return null;
         const risk = riskText(s.risk);
@@ -204,7 +204,18 @@ export function RealMapView(props: RealMapViewProps) {
               click: (e) => {
                 e.originalEvent?.stopPropagation?.();
                 e.originalEvent?.preventDefault?.();
-                props.onSelectStationId(s.id);
+                const multi = Boolean(e.originalEvent && ("ctrlKey" in e.originalEvent ? (e.originalEvent as MouseEvent).ctrlKey : false)) ||
+                  Boolean(e.originalEvent && ("shiftKey" in e.originalEvent ? (e.originalEvent as MouseEvent).shiftKey : false));
+
+                if (!multi) {
+                  props.onSelectStationIds([s.id]);
+                  return;
+                }
+
+                const set = new Set(props.selectedStationIds);
+                if (set.has(s.id)) set.delete(s.id);
+                else set.add(s.id);
+                props.onSelectStationIds(Array.from(set));
               }
             }}
           >

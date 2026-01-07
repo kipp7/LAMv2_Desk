@@ -59,9 +59,11 @@ export function AnalysisPage() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [online, setOnline] = useState<boolean>(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
   const [rainRange, setRainRange] = useState<"7d" | "24h">("7d");
-  const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
+  const [selectedStationIds, setSelectedStationIds] = useState<string[]>([]);
   const [mapViewSeed, setMapViewSeed] = useState(0);
   const [stationPanelExpanded, setStationPanelExpanded] = useState(false);
+  const [stationPanelPage, setStationPanelPage] = useState(0);
+  const [stationPanelPlaying, setStationPanelPlaying] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export function AnalysisPage() {
 
   useEffect(() => {
     if (mapType === "3D" || mapType === "视频") {
-      setSelectedStationId(null);
+      setSelectedStationIds([]);
     }
   }, [mapType]);
 
@@ -397,14 +399,28 @@ export function AnalysisPage() {
   const hasCritical = stats.offline > 0;
   const hasWarn = stats.warn > 0;
   const apiModeLabel = apiMode === "mock" ? "演示环境" : "联调环境";
-  const selectedStation = useMemo(() => {
-    if (!selectedStationId) return null;
-    return stations.find((s) => s.id === selectedStationId) ?? null;
-  }, [selectedStationId, stations]);
+  const selectedStations = useMemo(() => {
+    if (!selectedStationIds.length) return [];
+    const set = new Set(selectedStationIds);
+    return stations.filter((s) => set.has(s.id));
+  }, [selectedStationIds, stations]);
 
   useEffect(() => {
-    if (!selectedStationId) setStationPanelExpanded(false);
-  }, [selectedStationId]);
+    if (!selectedStationIds.length) {
+      setStationPanelExpanded(false);
+      setStationPanelPage(0);
+    }
+  }, [selectedStationIds.length]);
+
+  useEffect(() => {
+    if (!stationPanelPlaying) return;
+    const pages = Math.max(1, Math.ceil(selectedStations.length / 3));
+    if (pages <= 1) return;
+    const t = window.setInterval(() => {
+      setStationPanelPage((p) => (p + 1) % pages);
+    }, 5000);
+    return () => window.clearInterval(t);
+  }, [selectedStations.length, stationPanelPlaying]);
 
   const metricsByStationId = useMemo(() => {
     type Metrics = {
@@ -562,13 +578,13 @@ export function AnalysisPage() {
                   <Button
                     size="small"
                     onClick={() => {
-                      setSelectedStationId(null);
+                      setSelectedStationIds([]);
                       setMapViewSeed((s) => s + 1);
                     }}
                   >
                     重置视图
                   </Button>
-                  {selectedStation ? <Tag color="cyan">已选：{selectedStation.name}</Tag> : null}
+                  {selectedStations.length ? <Tag color="cyan">已选 {selectedStations.length}</Tag> : null}
                   <MapSwitchPanel selected={mapType} onSelect={setMapType} />
                 </div>
               }
@@ -605,8 +621,8 @@ export function AnalysisPage() {
                       <RealMapView
                         layer={mapType}
                         stations={stations}
-                        selectedStationId={selectedStationId}
-                        onSelectStationId={setSelectedStationId}
+                        selectedStationIds={selectedStationIds}
+                        onSelectStationIds={setSelectedStationIds}
                         resetKey={mapViewSeed}
                         metricsByStationId={metricsByStationId}
                       />
@@ -620,10 +636,10 @@ export function AnalysisPage() {
                           <span className="dot low" />
                           低风险
                         </div>
-                        {selectedStation ? (
+                        {selectedStations.length ? (
                           <div className="desk-analysis-map-selectedpanel">
                             <div className="desk-analysis-map-selectedpanel-head">
-                              <div className="desk-analysis-map-selectedpanel-title">{selectedStation.name}</div>
+                              <div className="desk-analysis-map-selectedpanel-title">已选站点</div>
                               <div className="desk-analysis-map-selectedpanel-actions">
                                 <button
                                   type="button"
@@ -635,51 +651,80 @@ export function AnalysisPage() {
                                 <button
                                   type="button"
                                   className="desk-analysis-map-selectedpanel-close"
-                                  onClick={() => setSelectedStationId(null)}
+                                  onClick={() => setSelectedStationIds([])}
                                 >
                                   关闭
                                 </button>
                               </div>
                             </div>
                             <div className="desk-analysis-map-selectedpanel-body">
-                              <span className="k">风险</span>
-                              <span className="v">
-                                {selectedStation.risk === "high" ? "高风险" : selectedStation.risk === "mid" ? "中风险" : "低风险"}
-                              </span>
-                              <span className="k">状态</span>
-                              <span className="v">
-                                {selectedStation.status === "online" ? "在线" : selectedStation.status === "warning" ? "预警" : "离线"}
-                              </span>
+                              <div className="desk-analysis-map-selectedpanel-summary">
+                                <span className="badge">{selectedStations.length} 个站点</span>
+                                <button
+                                  type="button"
+                                  className="desk-analysis-map-selectedpanel-pill"
+                                  onClick={() => setStationPanelPlaying((v) => !v)}
+                                >
+                                  {stationPanelPlaying ? "暂停轮播" : "开始轮播"}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="desk-analysis-map-selectedpanel-pill"
+                                  onClick={() => setSelectedStationIds([])}
+                                >
+                                  清空
+                                </button>
+                              </div>
 
-                              <span className="k">传感器</span>
-                              <span className="v">{String(selectedStation.deviceCount)}</span>
-                              <span className="k">区域</span>
-                              <span className="v">{selectedStation.area}</span>
-
-                              <span className="k">在线</span>
-                              <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceOnline ?? 0)}</span>
-                              <span className="k">离线</span>
-                              <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceOffline ?? 0)}</span>
-
-                              <span className="k">预警</span>
-                              <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceWarn ?? 0)}</span>
-                              <span className="k">更新</span>
-                              <span className="v">{metricsByStationId[selectedStation.id]?.lastSeenAt?.slice(11, 19) ?? "—"}</span>
-
-                              {stationPanelExpanded ? (
-                                <>
-                                  <span className="k">坐标</span>
-                                  <span className="v">
-                                    {selectedStation.lng.toFixed(5)}, {selectedStation.lat.toFixed(5)}
-                                  </span>
-                                  <span className="k">类型</span>
-                                  <span className="v">
-                                    {Object.entries(metricsByStationId[selectedStation.id]?.types ?? {})
-                                      .map(([t, n]) => `${t}:${String(n)}`)
-                                      .join("  ") || "—"}
-                                  </span>
-                                </>
-                              ) : null}
+                              <div className="desk-analysis-map-selectedpanel-list">
+                                {selectedStations
+                                  .slice()
+                                  .sort((a, b) => {
+                                    const score = (r: Station["risk"]) => (r === "high" ? 3 : r === "mid" ? 2 : 1);
+                                    const diff = score(b.risk) - score(a.risk);
+                                    if (diff) return diff;
+                                    return a.name.localeCompare(b.name);
+                                  })
+                                  .slice(stationPanelPage * 3, stationPanelPage * 3 + 3)
+                                  .map((s) => {
+                                    const m = metricsByStationId[s.id];
+                                    const risk = s.risk === "high" ? "高风险" : s.risk === "mid" ? "中风险" : "低风险";
+                                    const status = s.status === "online" ? "在线" : s.status === "warning" ? "预警" : "离线";
+                                    return (
+                                      <button
+                                        key={s.id}
+                                        type="button"
+                                        className="desk-analysis-map-selectedpanel-item"
+                                        onClick={() => setSelectedStationIds([s.id])}
+                                      >
+                                        <div className="n">{s.name}</div>
+                                        <div className="m">
+                                          <span className={`t ${s.risk}`}>{risk}</span>
+                                          <span className={`t ${s.status}`}>{status}</span>
+                                          <span className="t">传感器 {s.deviceCount}</span>
+                                        </div>
+                                        <div className="m2">
+                                          <span>在线 {m?.deviceOnline ?? 0}</span>
+                                          <span>预警 {m?.deviceWarn ?? 0}</span>
+                                          <span>离线 {m?.deviceOffline ?? 0}</span>
+                                          <span>更新 {m?.lastSeenAt?.slice(11, 19) ?? "—"}</span>
+                                        </div>
+                                        {stationPanelExpanded ? (
+                                          <div className="m3">
+                                            <span>坐标 {s.lng.toFixed(5)}, {s.lat.toFixed(5)}</span>
+                                            <span>
+                                              类型{" "}
+                                              {Object.entries(m?.types ?? {})
+                                                .map(([t, n]) => `${t}:${String(n)}`)
+                                                .join("  ") || "—"}
+                                            </span>
+                                            <span className="area">{s.area}</span>
+                                          </div>
+                                        ) : null}
+                                      </button>
+                                    );
+                                  })}
+                              </div>
                             </div>
                             <div className="desk-analysis-map-selectedpanel-foot">
                               <button
@@ -699,9 +744,9 @@ export function AnalysisPage() {
                             </div>
                           </div>
                         ) : null}
-                      </div>
-                    </>
-                  )}
+                    </div>
+                  </>
+                )}
                 </div>
                 <div className="desk-analysis-mapbottom">
                   <div className="desk-analysis-subtitle">实时异常</div>
