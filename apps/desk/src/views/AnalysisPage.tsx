@@ -38,6 +38,16 @@ function darkTooltip() {
   };
 }
 
+function darkCategoryAxis(data: string[]) {
+  const { axisLabel: _unusedAxisLabel, ...rest } = darkAxis();
+  return {
+    type: "category" as const,
+    data,
+    ...rest,
+    axisLabel: { ...darkAxis().axisLabel, hideOverlap: true }
+  };
+}
+
 export function AnalysisPage() {
   const api = useApi();
   const navigate = useNavigate();
@@ -156,10 +166,10 @@ export function AnalysisPage() {
     const { axisLabel: _unusedAxisLabel, ...baseXAxis } = chartBase.xAxis as Record<string, unknown>;
     return {
       ...chartBase,
-      grid: { left: "10%", right: "16%", top: 44, bottom: 30, containLabel: true },
+      grid: { left: "0%", right: "0%", top: 30, bottom: 0, containLabel: true },
       legend: {
         top: 8,
-        left: 10,
+        left: "center",
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
         itemHeight: 10
@@ -201,10 +211,10 @@ export function AnalysisPage() {
     const { axisLabel: _unusedAxisLabel, ...baseXAxis } = chartBase.xAxis as Record<string, unknown>;
     return {
       ...chartBase,
-      grid: { left: "10%", right: "16%", top: 44, bottom: 30, containLabel: true },
+      grid: { left: "0%", right: "0%", top: 30, bottom: 0, containLabel: true },
       legend: {
         top: 8,
-        left: 10,
+        left: "center",
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
         itemHeight: 10
@@ -252,7 +262,7 @@ export function AnalysisPage() {
       textStyle: { color: "rgba(226, 232, 240, 0.9)" },
       grid: { left: "10%", right: "6%", top: 42, bottom: 32, containLabel: true },
       tooltip: { trigger: "axis", ...darkTooltip() },
-      xAxis: { type: "category", data: labels, ...darkAxis() },
+      xAxis: darkCategoryAxis(labels),
       yAxis: { type: "value", name: is24h ? "mm/h" : "mm", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } },
       series: [
         {
@@ -332,7 +342,7 @@ export function AnalysisPage() {
         itemWidth: 10,
         itemHeight: 10
       },
-      xAxis: { type: "category", data: labels, ...darkAxis() },
+      xAxis: darkCategoryAxis(labels),
       yAxis: { type: "value", ...darkAxis() },
       series: [
         {
