@@ -277,7 +277,7 @@ export function AnalysisPage() {
       textStyle: { color: "rgba(226, 232, 240, 0.9)" },
       tooltip: { trigger: "item", ...darkTooltip() },
       legend: {
-        bottom: 6,
+        bottom: 0,
         left: "center",
         orient: "horizontal",
         itemWidth: 10,
@@ -552,27 +552,17 @@ export function AnalysisPage() {
             系统设置
           </button>
         </div>
-      </div>
 
-      {hasCritical ? (
-        <div className="desk-analysis-alert">
-          <Alert
-            type="error"
-            showIcon
-            message="存在离线设备"
-            description="当前有设备离线，请检查网络/供电/采集链路。"
-          />
-        </div>
-      ) : hasWarn ? (
-        <div className="desk-analysis-alert">
-          <Alert
-            type="warning"
-            showIcon
-            message="存在预警设备"
-            description="当前有设备触发预警，请关注形变、雨量等指标。"
-          />
-        </div>
-      ) : null}
+        {hasCritical ? (
+          <div className="desk-analysis-alert">
+            <Alert type="error" showIcon message={`存在离线设备：${String(stats.offline)}`} />
+          </div>
+        ) : hasWarn ? (
+          <div className="desk-analysis-alert">
+            <Alert type="warning" showIcon message={`存在预警设备：${String(stats.warn)}`} />
+          </div>
+        ) : null}
+      </div>
 
       {loading ? (
         <div className="desk-analysis-loading">

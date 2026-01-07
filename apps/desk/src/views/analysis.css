@@ -187,19 +187,19 @@
 
 .desk-analysis-alert {
   position: absolute;
-  top: 88px;
-  left: 16px;
-  right: 16px;
-  z-index: 60;
-  display: flex;
-  justify-content: center;
+  top: 20px;
+  right: 280px;
+  z-index: 25;
+  width: min(380px, calc(100vw - 520px));
 }
 
 .desk-analysis-alert .ant-alert {
-  width: min(920px, 100%);
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  box-shadow: 0 0 24px rgba(239, 68, 68, 0.18);
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.12);
 }
 
 .desk-analysis-loading {
@@ -416,5 +416,13 @@
   .desk-analysis-meta {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .desk-analysis-alert {
+    top: 70px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(520px, calc(100vw - 36px));
   }
 }
