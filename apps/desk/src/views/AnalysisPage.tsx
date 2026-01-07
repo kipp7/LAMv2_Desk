@@ -8,6 +8,7 @@ import type { Device, Station } from "../api/client";
 import { useApi } from "../api/ApiProvider";
 import { BaseCard } from "../components/BaseCard";
 import { MapSwitchPanel, type MapType } from "../components/MapSwitchPanel";
+import { RealMapView } from "../components/RealMapView";
 import { StatusTag } from "../components/StatusTag";
 import { TerrainBackdrop } from "../components/TerrainBackdrop";
 import { useAuthStore } from "../stores/authStore";
@@ -375,159 +376,6 @@ export function AnalysisPage() {
     };
   }, [devices.length, stations.length, stats.offline, stats.warn]);
 
-  const mapOption = useMemo(() => {
-    const riskColor = (risk: Station["risk"]) => {
-      if (risk === "high") return "#ef4444";
-      if (risk === "mid") return "#f59e0b";
-      return "#22c55e";
-    };
-
-    const points = stations.map((s) => ({
-      name: s.name,
-      value: [s.lng, s.lat],
-      stationId: s.id,
-      risk: s.risk,
-      status: s.status,
-      area: s.area,
-      deviceCount: s.deviceCount
-    }));
-
-    const lngs = stations.map((s) => s.lng);
-    const lats = stations.map((s) => s.lat);
-    const minX = lngs.length ? Math.min(...lngs) - 0.02 : 0;
-    const maxX = lngs.length ? Math.max(...lngs) + 0.02 : 1;
-    const minY = lats.length ? Math.min(...lats) - 0.02 : 0;
-    const maxY = lats.length ? Math.max(...lats) + 0.02 : 1;
-
-    const zones = stations
-      .filter((s) => s.risk !== "low")
-      .slice(0, 4)
-      .map((s) => {
-        const pad = s.risk === "high" ? 0.012 : 0.009;
-        return [
-          { coord: [s.lng - pad, s.lat - pad] },
-          { coord: [s.lng + pad, s.lat + pad] }
-        ];
-      });
-
-    const selected = selectedStationId ? points.filter((p) => p.stationId === selectedStationId) : [];
-
-    return {
-      backgroundColor: "transparent",
-      textStyle: { color: "rgba(226, 232, 240, 0.9)" },
-      tooltip: {
-        trigger: "item",
-        ...darkTooltip(),
-        formatter: (p: {
-          name: string;
-          data?: { area?: string; risk?: Station["risk"]; status?: Station["status"]; deviceCount?: number };
-        }) => {
-          const risk = p.data?.risk;
-          const riskText = risk === "high" ? "高风险" : risk === "mid" ? "中风险" : "低风险";
-          const statusText = p.data?.status === "online" ? "在线" : p.data?.status === "warning" ? "预警" : "离线";
-          const area = p.data?.area ?? "—";
-          const deviceCount = typeof p.data?.deviceCount === "number" ? p.data.deviceCount : 0;
-          return `${p.name}<br/>区域：${area}<br/>风险：${riskText}<br/>状态：${statusText}<br/>传感器：${String(deviceCount)}`;
-        }
-      },
-      grid: { left: 16, right: 16, top: 10, bottom: 16 },
-      xAxis: {
-        type: "value",
-        min: minX,
-        max: maxX,
-        axisLabel: { show: false },
-        axisTick: { show: false },
-        axisLine: { show: false },
-        splitLine: { show: false }
-      },
-      yAxis: {
-        type: "value",
-        min: minY,
-        max: maxY,
-        axisLabel: { show: false },
-        axisTick: { show: false },
-        axisLine: { show: false },
-        splitLine: { show: false }
-      },
-      dataZoom: [
-        {
-          type: "inside",
-          xAxisIndex: 0,
-          filterMode: "none",
-          zoomOnMouseWheel: true,
-          moveOnMouseMove: true,
-          moveOnMouseWheel: true,
-          preventDefaultMouseMove: false
-        },
-        {
-          type: "inside",
-          yAxisIndex: 0,
-          filterMode: "none",
-          zoomOnMouseWheel: true,
-          moveOnMouseMove: true,
-          moveOnMouseWheel: true,
-          preventDefaultMouseMove: false
-        }
-      ],
-      series: [
-        {
-          type: "scatter",
-          symbolSize: 16,
-          data: points,
-          itemStyle: {
-            color: (params: { data: { risk: Station["risk"] } }) => riskColor(params.data.risk),
-            shadowBlur: 12,
-            shadowColor: "rgba(0,255,255,0.18)"
-          },
-          label: {
-            show: true,
-            formatter: (p: { data: { risk: Station["risk"]; name: string } }) => (p.data.risk === "high" ? p.data.name : ""),
-            color: "rgba(226, 232, 240, 0.92)",
-            fontWeight: 800,
-            fontSize: 12,
-            position: "right",
-            distance: 6
-          },
-          markArea: zones.length
-            ? {
-                silent: true,
-                itemStyle: { color: "rgba(245, 158, 11, 0.06)", borderColor: "rgba(245, 158, 11, 0.22)", borderWidth: 1 },
-                data: zones
-              }
-            : undefined
-        },
-        {
-          type: "effectScatter",
-          symbolSize: 18,
-          data: points.filter((p) => p.risk === "high"),
-          rippleEffect: { scale: 2.2, brushType: "stroke" },
-          itemStyle: { color: "#ef4444" },
-          zlevel: 3
-        },
-        {
-          type: "scatter",
-          symbolSize: 24,
-          data: selected,
-          itemStyle: {
-            color: "rgba(34, 211, 238, 1)",
-            shadowBlur: 18,
-            shadowColor: "rgba(34, 211, 238, 0.35)"
-          },
-          label: {
-            show: true,
-            formatter: (p: { data: { name: string } }) => p.data.name,
-            color: "rgba(255, 255, 255, 0.95)",
-            fontWeight: 900,
-            fontSize: 12,
-            position: "top",
-            distance: 8
-          },
-          zlevel: 4
-        }
-      ]
-    };
-  }, [selectedStationId, stations]);
-
   const anomalies: AnomalyRow[] = useMemo(() => {
     const sample = devices.slice(0, 6);
     return sample.map((d, idx) => ({
@@ -692,6 +540,7 @@ export function AnalysisPage() {
                 <div
                   className={clsx(
                     "desk-analysis-maptop",
+                    (mapType === "卫星图" || mapType === "2D") && "is-realmap",
                     mapType === "卫星图" && "is-satellite",
                     mapType === "2D" && "is-2d",
                     mapType === "3D" && "is-3d"
@@ -716,16 +565,12 @@ export function AnalysisPage() {
                     </div>
                   ) : (
                     <>
-                      <ReactECharts
-                        key={`${mapType}-${mapViewSeed}`}
-                        option={mapOption}
-                        style={{ height: "100%" }}
-                        onEvents={{
-                          click: (p: { data?: { stationId?: string } }) => {
-                            const sid = p.data?.stationId;
-                            if (sid) setSelectedStationId(sid);
-                          }
-                        }}
+                      <RealMapView
+                        layer={mapType}
+                        stations={stations}
+                        selectedStationId={selectedStationId}
+                        onSelectStationId={setSelectedStationId}
+                        resetKey={mapViewSeed}
                       />
                       <div className="desk-analysis-map-overlay">
                         <div className="desk-analysis-map-hint">拖拽移动，滚轮缩放，点击站点查看详情</div>
