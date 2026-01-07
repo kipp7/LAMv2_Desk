@@ -157,7 +157,7 @@ export function AnalysisPage() {
       ...chartBase,
       grid: { left: 42, right: 42, top: 22, bottom: 30 },
       legend: {
-        top: 0,
+        top: 6,
         right: 10,
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
@@ -197,7 +197,7 @@ export function AnalysisPage() {
       ...chartBase,
       grid: { left: 42, right: 42, top: 22, bottom: 30 },
       legend: {
-        top: 0,
+        top: 6,
         right: 10,
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
@@ -328,9 +328,9 @@ export function AnalysisPage() {
       backgroundColor: "transparent",
       textStyle: { color: "rgba(226, 232, 240, 0.9)" },
       tooltip: { trigger: "axis", ...darkTooltip() },
-      grid: { left: 42, right: 14, top: 24, bottom: 28 },
+      grid: { left: 42, right: 14, top: 34, bottom: 28 },
       legend: {
-        top: 0,
+        top: 6,
         left: 10,
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
@@ -610,7 +610,7 @@ export function AnalysisPage() {
                 </span>
               }
               extra={
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div className="desk-analysis-map-extra">
                   <Tag color={hasCritical ? "red" : hasWarn ? "orange" : "green"}>{hasCritical ? "告警" : hasWarn ? "预警" : "正常"}</Tag>
                   <Switch checked={autoRefresh} size="small" onChange={setAutoRefresh} />
                   <Button
@@ -674,7 +674,7 @@ export function AnalysisPage() {
               <BaseCard
                 title={rainRange === "24h" ? "降雨强度（24 小时）" : "累计雨量（7 天）"}
                 extra={
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div className="desk-analysis-range-extra">
                     <Button
                       size="small"
                       type={rainRange === "24h" ? "primary" : "default"}

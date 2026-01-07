@@ -36,8 +36,8 @@
 
 .desk-analysis-nav {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 18px;
+  transform: none;
   display: flex;
   gap: 24px;
   z-index: 20;
@@ -75,6 +75,24 @@
   letter-spacing: 0.25em;
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.7), 0 0 20px rgba(0, 255, 255, 0.35);
   z-index: 10;
+}
+
+.desk-analysis-map-extra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.desk-analysis-map-extra .ant-switch {
+  transform: scale(0.92);
+}
+
+.desk-analysis-range-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .desk-analysis-meta {
@@ -379,4 +397,24 @@
 .desk-sensor-value {
   font-weight: 800;
   font-size: 20px;
+}
+
+@media (max-width: 1100px) {
+  .desk-analysis-title {
+    font-size: 26px;
+    letter-spacing: 0.18em;
+  }
+
+  .desk-analysis-nav.left {
+    left: 18px;
+  }
+
+  .desk-analysis-nav.right {
+    right: 18px;
+  }
+
+  .desk-analysis-meta {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
