@@ -158,7 +158,7 @@ export function AnalysisPage() {
       ...chartBase,
       grid: { left: "0%", right: "0%", top: 30, bottom: 0, containLabel: true },
       legend: {
-        top: 8,
+        top: 2,
         left: "center",
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
@@ -203,7 +203,7 @@ export function AnalysisPage() {
       ...chartBase,
       grid: { left: "0%", right: "0%", top: 30, bottom: 0, containLabel: true },
       legend: {
-        top: 8,
+        top: 2,
         left: "center",
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
@@ -271,24 +271,24 @@ export function AnalysisPage() {
     const mid = stations.filter((s) => s.risk === "mid").length;
     const low = stations.filter((s) => s.risk === "low").length;
     const total = stations.length;
-    const centerX = "38%";
-    const centerY = "55%";
 
     return {
       backgroundColor: "transparent",
       textStyle: { color: "rgba(226, 232, 240, 0.9)" },
       tooltip: { trigger: "item", ...darkTooltip() },
       legend: {
-        top: 6,
-        right: 10,
-        orient: "vertical",
+        bottom: 6,
+        left: "center",
+        orient: "horizontal",
+        itemWidth: 10,
+        itemHeight: 10,
         textStyle: { color: "rgba(226, 232, 240, 0.82)" }
       },
       series: [
         {
           type: "pie",
           radius: ["52%", "78%"],
-          center: [centerX, centerY],
+          center: ["50%", "44%"],
           label: {
             show: true,
             position: "center",
@@ -326,7 +326,7 @@ export function AnalysisPage() {
       tooltip: { trigger: "axis", ...darkTooltip() },
       grid: { left: "0%", right: "0%", top: 30, bottom: 0, containLabel: true },
       legend: {
-        top: 8,
+        top: 2,
         left: "center",
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
@@ -742,12 +742,21 @@ export function AnalysisPage() {
                     <ReactECharts
                       option={{
                         backgroundColor: "transparent",
-                        tooltip: { trigger: "item" },
+                        tooltip: { trigger: "item", ...darkTooltip() },
                         series: [
                           {
                             type: "pie",
                             radius: ["55%", "80%"],
-                            label: { show: false },
+                            label: {
+                              show: true,
+                              position: "center",
+                              formatter: `{v|${String(stats.devices)}}\n{l|传感器}`,
+                              rich: {
+                                v: { color: "rgba(226, 232, 240, 0.96)", fontSize: 20, fontWeight: 900, lineHeight: 22 },
+                                l: { color: "rgba(148, 163, 184, 0.9)", fontSize: 12, fontWeight: 800, lineHeight: 16 }
+                              }
+                            },
+                            labelLine: { show: false },
                             data: [
                               { name: "在线", value: stats.online, itemStyle: { color: "#22c55e" } },
                               { name: "预警", value: stats.warn, itemStyle: { color: "#f59e0b" } },
