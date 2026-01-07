@@ -69,7 +69,10 @@ function RemoveLeafletAttributionPrefix() {
 
 function ClearSelectionOnMapClick(props: { onClear: () => void }) {
   useMapEvents({
-    click: () => {
+    click: (e) => {
+      const target = e.originalEvent?.target as Element | null | undefined;
+      if (target?.closest?.(".leaflet-marker-icon") || target?.closest?.(".leaflet-tooltip")) return;
+      if (e.originalEvent?.defaultPrevented) return;
       props.onClear();
     }
   });
@@ -199,7 +202,8 @@ export function RealMapView(props: RealMapViewProps) {
             icon={icon}
             eventHandlers={{
               click: (e) => {
-                L.DomEvent.stopPropagation(e.originalEvent);
+                e.originalEvent?.stopPropagation?.();
+                e.originalEvent?.preventDefault?.();
                 props.onSelectStationId(s.id);
               }
             }}
