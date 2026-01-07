@@ -2,11 +2,19 @@ import "leaflet/dist/leaflet.css";
 
 import L from "leaflet";
 import { useEffect, useMemo } from "react";
-import { MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from "react-leaflet";
 
 import type { Station } from "../api/client";
 
 type BaseLayer = "2D" | "卫星图";
+
+export type StationMapMetrics = {
+  deviceOnline: number;
+  deviceWarn: number;
+  deviceOffline: number;
+  lastSeenAt?: string;
+  types?: Partial<Record<"gnss" | "rain" | "tilt" | "temp_hum" | "camera", number>>;
+};
 
 type RealMapViewProps = {
   layer: BaseLayer;
@@ -14,6 +22,7 @@ type RealMapViewProps = {
   selectedStationId: string | null;
   onSelectStationId: (id: string | null) => void;
   resetKey?: number;
+  metricsByStationId?: Record<string, StationMapMetrics | undefined>;
 };
 
 function riskColor(risk: Station["risk"]) {
@@ -55,6 +64,15 @@ function RemoveLeafletAttributionPrefix() {
     if (!map.attributionControl) return;
     map.attributionControl.setPrefix(false);
   }, [map]);
+  return null;
+}
+
+function ClearSelectionOnMapClick(props: { onClear: () => void }) {
+  useMapEvents({
+    click: () => {
+      props.onClear();
+    }
+  });
   return null;
 }
 
@@ -160,6 +178,11 @@ export function RealMapView(props: RealMapViewProps) {
       )}
       <RemoveLeafletAttributionPrefix />
       <RecenterOnReset resetKey={props.resetKey} bounds={bounds} />
+      <ClearSelectionOnMapClick
+        onClear={() => {
+          props.onSelectStationId(null);
+        }}
+      />
 
       {props.stations.map((s) => {
         const isSelected = props.selectedStationId === s.id;
@@ -167,7 +190,7 @@ export function RealMapView(props: RealMapViewProps) {
         if (!icon) return null;
         const risk = riskText(s.risk);
         const status = statusText(s.status);
-        const coord = `${s.lng.toFixed(5)}, ${s.lat.toFixed(5)}`;
+        const m = props.metricsByStationId?.[s.id];
 
         return (
           <Marker
@@ -175,7 +198,10 @@ export function RealMapView(props: RealMapViewProps) {
             position={[s.lat, s.lng]}
             icon={icon}
             eventHandlers={{
-              click: () => props.onSelectStationId(s.id)
+              click: (e) => {
+                L.DomEvent.stopPropagation(e.originalEvent);
+                props.onSelectStationId(s.id);
+              }
             }}
           >
             <Tooltip className="desk-map-tooltip" direction="top" offset={[0, -12]} opacity={1} sticky>
@@ -183,26 +209,12 @@ export function RealMapView(props: RealMapViewProps) {
               <div style={{ opacity: 0.9, fontSize: 12 }}>
                 {risk} · {status} · 传感器 {s.deviceCount}
               </div>
+              {m ? (
+                <div style={{ opacity: 0.9, fontSize: 12 }}>
+                  在线 {m.deviceOnline} 预警 {m.deviceWarn} 离线 {m.deviceOffline}
+                </div>
+              ) : null}
             </Tooltip>
-
-            {isSelected ? (
-              <Tooltip className="desk-map-tooltip-selected" direction="right" offset={[14, 0]} opacity={1} permanent>
-                <div className="desk-map-tooltip-title">{s.name}</div>
-                <div className="desk-map-tooltip-sub">
-                  <span className="k">风险</span>
-                  <span className="v">{risk}</span>
-                  <span className="k">状态</span>
-                  <span className="v">{status}</span>
-                </div>
-                <div className="desk-map-tooltip-sub">
-                  <span className="k">传感器</span>
-                  <span className="v">{String(s.deviceCount)}</span>
-                  <span className="k">坐标</span>
-                  <span className="v">{coord}</span>
-                </div>
-                <div className="desk-map-tooltip-foot">{s.area}</div>
-              </Tooltip>
-            ) : null}
           </Marker>
         );
       })}

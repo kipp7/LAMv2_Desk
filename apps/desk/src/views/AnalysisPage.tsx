@@ -401,6 +401,38 @@ export function AnalysisPage() {
     return stations.find((s) => s.id === selectedStationId) ?? null;
   }, [selectedStationId, stations]);
 
+  const metricsByStationId = useMemo(() => {
+    type Metrics = {
+      deviceOnline: number;
+      deviceWarn: number;
+      deviceOffline: number;
+      lastSeenAt?: string;
+      types: Partial<Record<Device["type"], number>>;
+    };
+
+    const map: Record<string, Metrics> = {};
+
+    for (const d of devices) {
+      const slot: Metrics =
+        map[d.stationId] ??
+        (map[d.stationId] = {
+          deviceOnline: 0,
+          deviceWarn: 0,
+          deviceOffline: 0,
+          types: {}
+        });
+
+      if (d.status === "online") slot.deviceOnline += 1;
+      else if (d.status === "warning") slot.deviceWarn += 1;
+      else slot.deviceOffline += 1;
+
+      slot.types[d.type] = (slot.types[d.type] ?? 0) + 1;
+      if (!slot.lastSeenAt || d.lastSeenAt > slot.lastSeenAt) slot.lastSeenAt = d.lastSeenAt;
+    }
+
+    return map;
+  }, [devices]);
+
   return (
     <div className="desk-analysis-screen">
       {alertOn ? (
@@ -571,6 +603,7 @@ export function AnalysisPage() {
                         selectedStationId={selectedStationId}
                         onSelectStationId={setSelectedStationId}
                         resetKey={mapViewSeed}
+                        metricsByStationId={metricsByStationId}
                       />
                       <div className="desk-analysis-map-overlay">
                         <div className="desk-analysis-map-hint">拖拽移动，滚轮缩放，点击站点查看详情</div>
@@ -583,15 +616,43 @@ export function AnalysisPage() {
                           低风险
                         </div>
                         {selectedStation ? (
-                          <div className="desk-analysis-map-selected">
-                            <div className="t">{selectedStation.name}</div>
-                            <div className="d">
-                              <span>{selectedStation.area}</span>
-                              <span>传感器 {selectedStation.deviceCount}</span>
-                              <span>
+                          <div className="desk-analysis-map-selectedpanel">
+                            <div className="desk-analysis-map-selectedpanel-head">
+                              <div className="desk-analysis-map-selectedpanel-title">{selectedStation.name}</div>
+                              <button
+                                type="button"
+                                className="desk-analysis-map-selectedpanel-close"
+                                onClick={() => setSelectedStationId(null)}
+                              >
+                                关闭
+                              </button>
+                            </div>
+                            <div className="desk-analysis-map-selectedpanel-body">
+                              <span className="k">风险</span>
+                              <span className="v">
                                 {selectedStation.risk === "high" ? "高风险" : selectedStation.risk === "mid" ? "中风险" : "低风险"}
                               </span>
+                              <span className="k">状态</span>
+                              <span className="v">
+                                {selectedStation.status === "online" ? "在线" : selectedStation.status === "warning" ? "预警" : "离线"}
+                              </span>
+
+                              <span className="k">传感器</span>
+                              <span className="v">{String(selectedStation.deviceCount)}</span>
+                              <span className="k">坐标</span>
+                              <span className="v">{selectedStation.lng.toFixed(5)}, {selectedStation.lat.toFixed(5)}</span>
+
+                              <span className="k">在线</span>
+                              <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceOnline ?? 0)}</span>
+                              <span className="k">离线</span>
+                              <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceOffline ?? 0)}</span>
+
+                              <span className="k">预警</span>
+                              <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceWarn ?? 0)}</span>
+                              <span className="k">更新</span>
+                              <span className="v">{metricsByStationId[selectedStation.id]?.lastSeenAt?.slice(11, 19) ?? "—"}</span>
                             </div>
+                            <div className="desk-analysis-map-selectedpanel-foot">{selectedStation.area}</div>
                           </div>
                         ) : null}
                       </div>
