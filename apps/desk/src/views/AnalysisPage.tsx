@@ -61,6 +61,7 @@ export function AnalysisPage() {
   const [rainRange, setRainRange] = useState<"7d" | "24h">("7d");
   const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
   const [mapViewSeed, setMapViewSeed] = useState(0);
+  const [stationPanelExpanded, setStationPanelExpanded] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -401,6 +402,10 @@ export function AnalysisPage() {
     return stations.find((s) => s.id === selectedStationId) ?? null;
   }, [selectedStationId, stations]);
 
+  useEffect(() => {
+    if (!selectedStationId) setStationPanelExpanded(false);
+  }, [selectedStationId]);
+
   const metricsByStationId = useMemo(() => {
     type Metrics = {
       deviceOnline: number;
@@ -619,13 +624,22 @@ export function AnalysisPage() {
                           <div className="desk-analysis-map-selectedpanel">
                             <div className="desk-analysis-map-selectedpanel-head">
                               <div className="desk-analysis-map-selectedpanel-title">{selectedStation.name}</div>
-                              <button
-                                type="button"
-                                className="desk-analysis-map-selectedpanel-close"
-                                onClick={() => setSelectedStationId(null)}
-                              >
-                                关闭
-                              </button>
+                              <div className="desk-analysis-map-selectedpanel-actions">
+                                <button
+                                  type="button"
+                                  className="desk-analysis-map-selectedpanel-close"
+                                  onClick={() => setStationPanelExpanded((v) => !v)}
+                                >
+                                  {stationPanelExpanded ? "收起" : "展开"}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="desk-analysis-map-selectedpanel-close"
+                                  onClick={() => setSelectedStationId(null)}
+                                >
+                                  关闭
+                                </button>
+                              </div>
                             </div>
                             <div className="desk-analysis-map-selectedpanel-body">
                               <span className="k">风险</span>
@@ -639,8 +653,8 @@ export function AnalysisPage() {
 
                               <span className="k">传感器</span>
                               <span className="v">{String(selectedStation.deviceCount)}</span>
-                              <span className="k">坐标</span>
-                              <span className="v">{selectedStation.lng.toFixed(5)}, {selectedStation.lat.toFixed(5)}</span>
+                              <span className="k">区域</span>
+                              <span className="v">{selectedStation.area}</span>
 
                               <span className="k">在线</span>
                               <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceOnline ?? 0)}</span>
@@ -651,8 +665,38 @@ export function AnalysisPage() {
                               <span className="v">{String(metricsByStationId[selectedStation.id]?.deviceWarn ?? 0)}</span>
                               <span className="k">更新</span>
                               <span className="v">{metricsByStationId[selectedStation.id]?.lastSeenAt?.slice(11, 19) ?? "—"}</span>
+
+                              {stationPanelExpanded ? (
+                                <>
+                                  <span className="k">坐标</span>
+                                  <span className="v">
+                                    {selectedStation.lng.toFixed(5)}, {selectedStation.lat.toFixed(5)}
+                                  </span>
+                                  <span className="k">类型</span>
+                                  <span className="v">
+                                    {Object.entries(metricsByStationId[selectedStation.id]?.types ?? {})
+                                      .map(([t, n]) => `${t}:${String(n)}`)
+                                      .join("  ") || "—"}
+                                  </span>
+                                </>
+                              ) : null}
                             </div>
-                            <div className="desk-analysis-map-selectedpanel-foot">{selectedStation.area}</div>
+                            <div className="desk-analysis-map-selectedpanel-foot">
+                              <button
+                                type="button"
+                                className="desk-analysis-map-selectedpanel-link"
+                                onClick={() => navigate("/app/device-management")}
+                              >
+                                前往设备管理
+                              </button>
+                              <button
+                                type="button"
+                                className="desk-analysis-map-selectedpanel-link"
+                                onClick={() => navigate("/app/gps-monitoring")}
+                              >
+                                前往形变监测
+                              </button>
+                            </div>
                           </div>
                         ) : null}
                       </div>
