@@ -141,7 +141,7 @@ export function AnalysisPage() {
     return {
       backgroundColor: "transparent",
       textStyle: { color: "rgba(226, 232, 240, 0.9)" },
-      grid: { left: 30, right: 18, top: 34, bottom: 30, containLabel: true },
+      grid: { left: "10%", right: "6%", top: 42, bottom: 30, containLabel: true },
       tooltip: { trigger: "axis", ...darkTooltip() },
       xAxis: {
         type: "category",
@@ -153,17 +153,22 @@ export function AnalysisPage() {
   }, []);
 
   const tempHumOption = useMemo(() => {
+    const { axisLabel: _unusedAxisLabel, ...baseXAxis } = chartBase.xAxis as Record<string, unknown>;
     return {
       ...chartBase,
-      grid: { left: 34, right: 42, top: 40, bottom: 30, containLabel: true },
+      grid: { left: "10%", right: "16%", top: 44, bottom: 30, containLabel: true },
       legend: {
-        top: 6,
-        right: 10,
+        top: 8,
+        left: 10,
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
         itemHeight: 10
       },
-      xAxis: { ...chartBase.xAxis, data: Array.from({ length: 12 }, (_, i) => `${String(i + 1)}时`) },
+      xAxis: {
+        ...baseXAxis,
+        data: Array.from({ length: 12 }, (_, i) => `${String(i + 1)}时`),
+        axisLabel: { ...darkAxis().axisLabel, hideOverlap: true }
+      },
       yAxis: [
         { type: "value", name: "°C", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } },
         { type: "value", name: "%", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } }
@@ -193,17 +198,22 @@ export function AnalysisPage() {
   }, [chartBase]);
 
   const vibrationOption = useMemo(() => {
+    const { axisLabel: _unusedAxisLabel, ...baseXAxis } = chartBase.xAxis as Record<string, unknown>;
     return {
       ...chartBase,
-      grid: { left: 34, right: 42, top: 40, bottom: 30, containLabel: true },
+      grid: { left: "10%", right: "16%", top: 44, bottom: 30, containLabel: true },
       legend: {
-        top: 6,
-        right: 10,
+        top: 8,
+        left: 10,
         textStyle: { color: "rgba(226, 232, 240, 0.82)" },
         itemWidth: 10,
         itemHeight: 10
       },
-      xAxis: { ...chartBase.xAxis, data: Array.from({ length: 12 }, (_, i) => `${String(i + 1)}时`) },
+      xAxis: {
+        ...baseXAxis,
+        data: Array.from({ length: 12 }, (_, i) => `${String(i + 1)}时`),
+        axisLabel: { ...darkAxis().axisLabel, hideOverlap: true }
+      },
       yAxis: [
         { type: "value", name: "mg", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } },
         { type: "value", name: "°/s", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } }
@@ -240,7 +250,7 @@ export function AnalysisPage() {
     return {
       backgroundColor: "transparent",
       textStyle: { color: "rgba(226, 232, 240, 0.9)" },
-      grid: { left: 30, right: 18, top: 34, bottom: 32, containLabel: true },
+      grid: { left: "10%", right: "6%", top: 42, bottom: 32, containLabel: true },
       tooltip: { trigger: "axis", ...darkTooltip() },
       xAxis: { type: "category", data: labels, ...darkAxis() },
       yAxis: { type: "value", name: is24h ? "mm/h" : "mm", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } },
