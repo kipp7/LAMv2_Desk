@@ -22,6 +22,18 @@ function riskColor(risk: Station["risk"]) {
   return "#22c55e";
 }
 
+function riskText(risk: Station["risk"]) {
+  if (risk === "high") return "高风险";
+  if (risk === "mid") return "中风险";
+  return "低风险";
+}
+
+function statusText(status: Station["status"]) {
+  if (status === "online") return "在线";
+  if (status === "warning") return "预警";
+  return "离线";
+}
+
 function riskClass(risk: Station["risk"]) {
   if (risk === "high") return "is-high";
   if (risk === "mid") return "is-mid";
@@ -153,8 +165,9 @@ export function RealMapView(props: RealMapViewProps) {
         const isSelected = props.selectedStationId === s.id;
         const icon = icons.get(s.id);
         if (!icon) return null;
-        const risk = s.risk === "high" ? "高风险" : s.risk === "mid" ? "中风险" : "低风险";
-        const status = s.status === "online" ? "在线" : s.status === "warning" ? "预警" : "离线";
+        const risk = riskText(s.risk);
+        const status = statusText(s.status);
+        const coord = `${s.lng.toFixed(5)}, ${s.lat.toFixed(5)}`;
 
         return (
           <Marker
@@ -165,15 +178,31 @@ export function RealMapView(props: RealMapViewProps) {
               click: () => props.onSelectStationId(s.id)
             }}
           >
-            <Tooltip direction="top" offset={[0, -12]} opacity={1} sticky>
+            <Tooltip className="desk-map-tooltip" direction="top" offset={[0, -12]} opacity={1} sticky>
               <div style={{ fontWeight: 900 }}>{s.name}</div>
-              <div style={{ opacity: 0.92, fontSize: 12 }}>
-                {risk} | {status}
-              </div>
               <div style={{ opacity: 0.9, fontSize: 12 }}>
-                区域：{s.area} 传感器：{s.deviceCount}
+                {risk} · {status} · 传感器 {s.deviceCount}
               </div>
             </Tooltip>
+
+            {isSelected ? (
+              <Tooltip className="desk-map-tooltip-selected" direction="right" offset={[14, 0]} opacity={1} permanent>
+                <div className="desk-map-tooltip-title">{s.name}</div>
+                <div className="desk-map-tooltip-sub">
+                  <span className="k">风险</span>
+                  <span className="v">{risk}</span>
+                  <span className="k">状态</span>
+                  <span className="v">{status}</span>
+                </div>
+                <div className="desk-map-tooltip-sub">
+                  <span className="k">传感器</span>
+                  <span className="v">{String(s.deviceCount)}</span>
+                  <span className="k">坐标</span>
+                  <span className="v">{coord}</span>
+                </div>
+                <div className="desk-map-tooltip-foot">{s.area}</div>
+              </Tooltip>
+            ) : null}
           </Marker>
         );
       })}
