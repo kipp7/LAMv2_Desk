@@ -170,8 +170,8 @@ export function AnalysisPage() {
         axisLabel: { ...darkAxis().axisLabel, hideOverlap: true }
       },
       yAxis: [
-        { type: "value", name: "°C", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } },
-        { type: "value", name: "%", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } }
+        { type: "value", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } },
+        { type: "value", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } }
       ],
       series: [
         {
@@ -215,8 +215,8 @@ export function AnalysisPage() {
         axisLabel: { ...darkAxis().axisLabel, hideOverlap: true }
       },
       yAxis: [
-        { type: "value", name: "mg", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } },
-        { type: "value", name: "°/s", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } }
+        { type: "value", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } },
+        { type: "value", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 3 } }
       ],
       series: [
         {
@@ -253,7 +253,7 @@ export function AnalysisPage() {
       grid: { left: "0%", right: "0%", top: 30, bottom: 0, containLabel: true },
       tooltip: { trigger: "axis", ...darkTooltip() },
       xAxis: { type: "category", data: labels, ...darkAxis() },
-      yAxis: { type: "value", name: is24h ? "mm/h" : "mm", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } },
+      yAxis: { type: "value", ...darkAxis(), axisLabel: { ...darkAxis().axisLabel, margin: 6 } },
       series: [
         {
           name: "雨量",
@@ -589,10 +589,10 @@ export function AnalysisPage() {
             <BaseCard title="告警趋势（近 12 小时）">
               <ReactECharts option={alertTrendOption} style={{ height: "100%" }} />
             </BaseCard>
-            <BaseCard title="环境趋势（温度/湿度）">
+            <BaseCard title="环境趋势（温度 °C / 湿度 %）">
               <ReactECharts option={tempHumOption} style={{ height: "100%" }} />
             </BaseCard>
-            <BaseCard title="振动趋势（加速度/陀螺仪）">
+            <BaseCard title="振动趋势（加速度 mg / 陀螺仪 °/s）">
               <ReactECharts option={vibrationOption} style={{ height: "100%" }} />
             </BaseCard>
           </div>
@@ -668,7 +668,7 @@ export function AnalysisPage() {
           <div className="desk-analysis-rightcol">
             <div className="desk-analysis-right-top">
               <BaseCard
-                title={rainRange === "24h" ? "降雨强度（24 小时）" : "累计雨量（7 天）"}
+                title={rainRange === "24h" ? "降雨强度（24 小时，mm/h）" : "累计雨量（7 天，mm）"}
                 extra={
                   <div className="desk-analysis-range-extra">
                     <Button
