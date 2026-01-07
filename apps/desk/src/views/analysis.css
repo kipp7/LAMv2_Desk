@@ -246,11 +246,138 @@
 .desk-analysis-maptop {
   flex: 0 0 65%;
   min-height: 0;
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(0, 255, 255, 0.1);
   background: radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.1), transparent 55%),
     radial-gradient(circle at 70% 80%, rgba(96, 165, 250, 0.1), transparent 60%), rgba(15, 23, 42, 0.35);
+}
+
+.desk-analysis-maptop.is-satellite::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(34, 211, 238, 0.12), transparent 55%),
+    radial-gradient(circle at 70% 65%, rgba(16, 185, 129, 0.10), transparent 60%),
+    radial-gradient(circle at 55% 45%, rgba(59, 130, 246, 0.10), transparent 58%),
+    repeating-linear-gradient(0deg, rgba(148, 163, 184, 0.04) 0px, rgba(148, 163, 184, 0.04) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.04) 0px, rgba(148, 163, 184, 0.04) 1px, transparent 1px, transparent 28px);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+.desk-analysis-maptop.is-2d::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(34, 211, 238, 0.06) 0px, rgba(34, 211, 238, 0.06) 1px, transparent 1px, transparent 34px),
+    repeating-linear-gradient(90deg, rgba(34, 211, 238, 0.05) 0px, rgba(34, 211, 238, 0.05) 1px, transparent 1px, transparent 34px);
+  opacity: 0.7;
+}
+
+.desk-analysis-3dwrap {
+  position: relative;
+  height: 100%;
+}
+
+.desk-analysis-terrain {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+.desk-analysis-terrain:active {
+  cursor: grabbing;
+}
+
+.desk-analysis-map-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  z-index: 5;
+}
+
+.desk-analysis-map-hint {
+  align-self: flex-end;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(2, 6, 23, 0.35);
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.desk-analysis-map-legend {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(2, 6, 23, 0.35);
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.desk-analysis-map-legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.desk-analysis-map-legend .dot.high {
+  background: rgba(239, 68, 68, 1);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+}
+
+.desk-analysis-map-legend .dot.mid {
+  background: rgba(245, 158, 11, 1);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.22);
+}
+
+.desk-analysis-map-legend .dot.low {
+  background: rgba(34, 197, 94, 1);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
+}
+
+.desk-analysis-map-selected {
+  align-self: flex-start;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 211, 238, 0.16);
+  background: rgba(2, 6, 23, 0.42);
+  color: rgba(226, 232, 240, 0.92);
+  max-width: 320px;
+}
+
+.desk-analysis-map-selected .t {
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.desk-analysis-map-selected .d {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  color: rgba(148, 163, 184, 0.92);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .desk-analysis-mapbottom {

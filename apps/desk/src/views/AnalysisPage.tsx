@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { Button, Spin, Switch, Tag } from "antd";
 import ReactECharts from "echarts-for-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -8,6 +9,7 @@ import { useApi } from "../api/ApiProvider";
 import { BaseCard } from "../components/BaseCard";
 import { MapSwitchPanel, type MapType } from "../components/MapSwitchPanel";
 import { StatusTag } from "../components/StatusTag";
+import { TerrainBackdrop } from "../components/TerrainBackdrop";
 import { useAuthStore } from "../stores/authStore";
 import { useSettingsStore } from "../stores/settingsStore";
 
@@ -43,6 +45,7 @@ export function AnalysisPage() {
   const navigate = useNavigate();
   const apiMode = useSettingsStore((s) => s.apiMode);
   const reducedMotion = useSettingsStore((s) => s.reducedMotion);
+  const terrainQuality = useSettingsStore((s) => s.terrainQuality);
   const user = useAuthStore((s) => s.user);
   const [mapType, setMapType] = useState<MapType>("卫星图");
   const [loading, setLoading] = useState(true);
@@ -55,6 +58,8 @@ export function AnalysisPage() {
   const [now, setNow] = useState<Date>(() => new Date());
   const [online, setOnline] = useState<boolean>(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
   const [rainRange, setRainRange] = useState<"7d" | "24h">("7d");
+  const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
+  const [mapViewSeed, setMapViewSeed] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -118,6 +123,12 @@ export function AnalysisPage() {
       window.clearInterval(t);
     };
   }, [autoRefresh, loadData]);
+
+  useEffect(() => {
+    if (mapType === "3D" || mapType === "视频") {
+      setSelectedStationId(null);
+    }
+  }, [mapType]);
 
   const stats = useMemo(() => {
     const online = devices.filter((d) => d.status === "online").length;
@@ -365,16 +376,21 @@ export function AnalysisPage() {
   }, [devices.length, stations.length, stats.offline, stats.warn]);
 
   const mapOption = useMemo(() => {
-    const points = stations.map((s) => ({
-      name: s.name,
-      value: [s.lng, s.lat, s.risk]
-    }));
-
     const riskColor = (risk: Station["risk"]) => {
       if (risk === "high") return "#ef4444";
       if (risk === "mid") return "#f59e0b";
       return "#22c55e";
     };
+
+    const points = stations.map((s) => ({
+      name: s.name,
+      value: [s.lng, s.lat],
+      stationId: s.id,
+      risk: s.risk,
+      status: s.status,
+      area: s.area,
+      deviceCount: s.deviceCount
+    }));
 
     const lngs = stations.map((s) => s.lng);
     const lats = stations.map((s) => s.lat);
@@ -394,16 +410,24 @@ export function AnalysisPage() {
         ];
       });
 
+    const selected = selectedStationId ? points.filter((p) => p.stationId === selectedStationId) : [];
+
     return {
       backgroundColor: "transparent",
       textStyle: { color: "rgba(226, 232, 240, 0.9)" },
       tooltip: {
         trigger: "item",
         ...darkTooltip(),
-        formatter: (p: { name: string; value?: [number, number, Station["risk"]] }) => {
-          const risk = p.value?.[2];
+        formatter: (p: {
+          name: string;
+          data?: { area?: string; risk?: Station["risk"]; status?: Station["status"]; deviceCount?: number };
+        }) => {
+          const risk = p.data?.risk;
           const riskText = risk === "high" ? "高风险" : risk === "mid" ? "中风险" : "低风险";
-          return `${p.name}<br/>${riskText}`;
+          const statusText = p.data?.status === "online" ? "在线" : p.data?.status === "warning" ? "预警" : "离线";
+          const area = p.data?.area ?? "—";
+          const deviceCount = typeof p.data?.deviceCount === "number" ? p.data.deviceCount : 0;
+          return `${p.name}<br/>区域：${area}<br/>风险：${riskText}<br/>状态：${statusText}<br/>传感器：${String(deviceCount)}`;
         }
       },
       grid: { left: 16, right: 16, top: 10, bottom: 16 },
@@ -425,15 +449,44 @@ export function AnalysisPage() {
         axisLine: { show: false },
         splitLine: { show: false }
       },
+      dataZoom: [
+        {
+          type: "inside",
+          xAxisIndex: 0,
+          filterMode: "none",
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
+          moveOnMouseWheel: true,
+          preventDefaultMouseMove: false
+        },
+        {
+          type: "inside",
+          yAxisIndex: 0,
+          filterMode: "none",
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
+          moveOnMouseWheel: true,
+          preventDefaultMouseMove: false
+        }
+      ],
       series: [
         {
           type: "scatter",
           symbolSize: 16,
-          data: points.map((p) => ({ name: p.name, value: p.value })),
+          data: points,
           itemStyle: {
-            color: (params: { data: { value: [number, number, Station["risk"]] } }) => riskColor(params.data.value[2]),
+            color: (params: { data: { risk: Station["risk"] } }) => riskColor(params.data.risk),
             shadowBlur: 12,
             shadowColor: "rgba(0,255,255,0.18)"
+          },
+          label: {
+            show: true,
+            formatter: (p: { data: { risk: Station["risk"]; name: string } }) => (p.data.risk === "high" ? p.data.name : ""),
+            color: "rgba(226, 232, 240, 0.92)",
+            fontWeight: 800,
+            fontSize: 12,
+            position: "right",
+            distance: 6
           },
           markArea: zones.length
             ? {
@@ -446,14 +499,34 @@ export function AnalysisPage() {
         {
           type: "effectScatter",
           symbolSize: 18,
-          data: points.filter((p) => p.value[2] === "high").map((p) => ({ name: p.name, value: p.value })),
+          data: points.filter((p) => p.risk === "high"),
           rippleEffect: { scale: 2.2, brushType: "stroke" },
           itemStyle: { color: "#ef4444" },
           zlevel: 3
+        },
+        {
+          type: "scatter",
+          symbolSize: 24,
+          data: selected,
+          itemStyle: {
+            color: "rgba(34, 211, 238, 1)",
+            shadowBlur: 18,
+            shadowColor: "rgba(34, 211, 238, 0.35)"
+          },
+          label: {
+            show: true,
+            formatter: (p: { data: { name: string } }) => p.data.name,
+            color: "rgba(255, 255, 255, 0.95)",
+            fontWeight: 900,
+            fontSize: 12,
+            position: "top",
+            distance: 8
+          },
+          zlevel: 4
         }
       ]
     };
-  }, [stations]);
+  }, [selectedStationId, stations]);
 
   const anomalies: AnomalyRow[] = useMemo(() => {
     const sample = devices.slice(0, 6);
@@ -475,6 +548,10 @@ export function AnalysisPage() {
   const hasCritical = stats.offline > 0;
   const hasWarn = stats.warn > 0;
   const apiModeLabel = apiMode === "mock" ? "演示环境" : "联调环境";
+  const selectedStation = useMemo(() => {
+    if (!selectedStationId) return null;
+    return stations.find((s) => s.id === selectedStationId) ?? null;
+  }, [selectedStationId, stations]);
 
   return (
     <div className="desk-analysis-screen">
@@ -597,18 +674,83 @@ export function AnalysisPage() {
                   >
                     刷新
                   </Button>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setSelectedStationId(null);
+                      setMapViewSeed((s) => s + 1);
+                    }}
+                  >
+                    重置视图
+                  </Button>
+                  {selectedStation ? <Tag color="cyan">已选：{selectedStation.name}</Tag> : null}
                   <MapSwitchPanel selected={mapType} onSelect={setMapType} />
                 </div>
               }
             >
               <div className="desk-analysis-mapstack">
-                <div className="desk-analysis-maptop">
+                <div
+                  className={clsx(
+                    "desk-analysis-maptop",
+                    mapType === "卫星图" && "is-satellite",
+                    mapType === "2D" && "is-2d",
+                    mapType === "3D" && "is-3d"
+                  )}
+                >
                   {mapType === "视频" ? (
                     <div className="desk-video-mock">视频流（接入后展示）</div>
                   ) : mapType === "3D" ? (
-                    <div className="desk-video-mock">3D 地图（接入后展示）</div>
+                    <div className="desk-analysis-3dwrap">
+                      <TerrainBackdrop className="desk-analysis-terrain" quality={terrainQuality} />
+                      <div className="desk-analysis-map-overlay">
+                        <div className="desk-analysis-map-hint">3D 视图：拖拽旋转，滚轮缩放，双击聚焦</div>
+                        <div className="desk-analysis-map-legend">
+                          <span className="dot high" />
+                          高风险
+                          <span className="dot mid" />
+                          中风险
+                          <span className="dot low" />
+                          低风险
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    <ReactECharts option={mapOption} style={{ height: "100%" }} />
+                    <>
+                      <ReactECharts
+                        key={`${mapType}-${mapViewSeed}`}
+                        option={mapOption}
+                        style={{ height: "100%" }}
+                        onEvents={{
+                          click: (p: { data?: { stationId?: string } }) => {
+                            const sid = p.data?.stationId;
+                            if (sid) setSelectedStationId(sid);
+                          }
+                        }}
+                      />
+                      <div className="desk-analysis-map-overlay">
+                        <div className="desk-analysis-map-hint">拖拽移动，滚轮缩放，点击站点查看详情</div>
+                        <div className="desk-analysis-map-legend">
+                          <span className="dot high" />
+                          高风险
+                          <span className="dot mid" />
+                          中风险
+                          <span className="dot low" />
+                          低风险
+                        </div>
+                        {selectedStation ? (
+                          <div className="desk-analysis-map-selected">
+                            <div className="t">{selectedStation.name}</div>
+                            <div className="d">
+                              <span>{selectedStation.area}</span>
+                              <span>传感器 {selectedStation.deviceCount}</span>
+                              <span>
+                                {selectedStation.risk === "high" ? "高风险" : selectedStation.risk === "mid" ? "中风险" : "低风险"}
+                              </span>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    </>
                   )}
                 </div>
                 <div className="desk-analysis-mapbottom">
