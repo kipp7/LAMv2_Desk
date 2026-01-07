@@ -31,6 +31,15 @@ function RecenterOnReset(props: { resetKey: number | undefined; bounds: L.LatLng
   return null;
 }
 
+function RemoveLeafletAttributionPrefix() {
+  const map = useMap();
+  useEffect(() => {
+    if (!map.attributionControl) return;
+    map.attributionControl.setPrefix(false);
+  }, [map]);
+  return null;
+}
+
 export function RealMapView(props: RealMapViewProps) {
   const tdtKey = (import.meta.env.VITE_TDT_KEY as string | undefined) ?? "";
   const useTdt = Boolean(tdtKey);
@@ -101,6 +110,7 @@ export function RealMapView(props: RealMapViewProps) {
       ) : (
         <TileLayer url={fallbackTile.url} attribution={fallbackTile.attribution} maxZoom={18} maxNativeZoom={18} detectRetina updateWhenIdle />
       )}
+      <RemoveLeafletAttributionPrefix />
       <RecenterOnReset resetKey={props.resetKey} bounds={bounds} />
 
       {props.stations.map((s) => {
